@@ -1,0 +1,15 @@
+// Find all the entries at the border with start and end time same.
+{
+  "query": {
+    "bool": {
+      "must": {
+        "script": {
+          "script": {
+            "inline": "doc['startTime.keyword'].value ==  doc['endTime.keyword'].value",
+            "lang": "painless"
+          }
+        }
+      }
+    }
+  }
+}
