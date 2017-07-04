@@ -74,17 +74,23 @@ public class Sketch extends PApplet {
 //    JSONObject obj = loadJSONObject("data/currentpath.json");
 
     String[] lines = loadStrings("data/currentpath.json");
+    int count = 0;
     for (String l: lines){
       JSONObject obj = parseJSONObject(l);
       JSONArray timedPath = obj.getJSONArray("timedPath");
+      println("\nDrawing path: " + obj.getString("path"));
       sensor.drawSubwayMap(timedPath, scale);
-      break;
+      if (count++ == 1) break;
     }
 
+    // Shape Test: Create a rounded edge.
     beginShape();
     vertex(10, 10);
     vertex(50, 10);
-    vertex(50, 50);
+    curveVertex(50, 10);
+    curveVertex(53, 13);
+    vertex(53, 13);
+    vertex(53, 50);
     endShape();
 
 //    sensor.drawPathFromJson(timedPath, scale);

@@ -377,6 +377,7 @@ public class Graph {
     drawLevelsGrid(scale);
 
     JSONObject currentNodeObj = pathNodes.getJSONObject(0);
+    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
 
     for(int i = 1; i < pathNodes.size(); i++) {
       String currentNodeName = currentNodeObj.getString("gate");
@@ -384,106 +385,74 @@ public class Graph {
       JSONObject nextNodeObj = pathNodes.getJSONObject(i);
       String nextNodeName = nextNodeObj.getString("gate");
 
-      if (this.getNamedNodes().containsKey(currentNodeName)) {
+      if (this.getNamedNodes().containsKey(currentNodeName) && this.getNamedNodes().containsKey(nextNodeName)) {
         Node currentNode = this.getNamedNodes().get(currentNodeName);
-        drawSubwayNode(currentNode, scale);
-        if (this.getNamedNodes().containsKey(nextNodeName)) {
-          Node nextNode = this.getNamedNodes().get(nextNodeName);
-          drawSubwayNode(nextNode, scale);
-          parent.strokeWeight(4);
-          parent.stroke(0, 120, 0);
-//          parent.line(gateLevels.get(currentNodeName).v1() * levelMultiplier * scale, currentNode.y * scale, gateLevels.get(nextNodeName).v1() * levelMultiplier * scale, nextNode.y * scale);
+        Node nextNode = this.getNamedNodes().get(nextNodeName);
 
-          NodeNumbers source = gateLevels.get(currentNodeName);
+        parent.strokeWeight(4);
 
-          NodeNumbers target = gateLevels.get(nextNodeName);
+        NodeNumbers source = gateLevels.get(currentNodeName);
+        NodeNumbers target = gateLevels.get(nextNodeName);
 
-//          PVector vertical = new PVector(source.x, source.y);
-//          PVector horizontal = new PVector(target.x, target.y);
-
-
-          if ( Math.abs(target.y - source.y) >= Math.abs(target.x - source.x)) {  // go up / down
-//          if ( (target.y - source.y) > (target.x - target.y)) {  // go up / down
-            if (target.y < source.y) { // go up
-              System.out.println("Going up ");
-              float x1 = (source.x * levelMultiplier + source.topCount++) * scale;
-              float y1 = source.y * levelMultiplier * scale;
-//              float x2 = (source.x* levelMultiplier + source.topCount) * scale;
-              float x2 = x1;
-              float y2 = (target.y * levelMultiplier + target.bottomCount++) * scale;
-              float x3 = (target.x* levelMultiplier) * scale;
-//              float y3 = (target.y* levelMultiplier + target.bottomCount) * scale;
-              float y3 = y2;
-
-              parent.beginShape();
-              parent.noFill();
-              parent.vertex(x1, y1);
-              parent.vertex(x2, y2);
-              parent.vertex(x3, y3);
-              parent.endShape();
-            } else {  // go down
-              System.out.println("Going down ");
-              float x1 = (source.x* levelMultiplier + source.bottomCount++) * scale;
-              float y1 = source.y* levelMultiplier * scale;
-//              float x2 = (source.x* levelMultiplier + source.topCount) * scale;
-              float x2 = x1;
-              float y2 = (target.y* levelMultiplier + target.bottomCount++) * scale;
-              float x3 = (target.x* levelMultiplier) * scale;
-//              float y3 = (target.y* levelMultiplier + target.bottomCount) * scale;
-              float y3 = y2;
-
-              parent.beginShape();
-              parent.noFill();
-              parent.vertex(x1, y1);
-//              parent.curveVertex(x2, y2);
-              parent.vertex(x2, y2);
-              parent.vertex(x3, y3);
-              parent.endShape();
-            }
-
-          } else {
-            System.out.println("Going else ");
-            if (target.x < source.x) { // go left
-              float x1 = (source.x * levelMultiplier + source.leftCount++) * scale;
-              float y1 = source.y * levelMultiplier * scale;
-              float x2 = (target.x * levelMultiplier + source.rightCount++) * scale;
-              float y2 = y1;
-//              float x3 = (target.x* levelMultiplier) * scale;
-              float x3 = x2;
-              float y3 = (target.y* levelMultiplier + target.bottomCount++) * scale;
-
-              parent.beginShape();
-              parent.noFill();
-              parent.vertex(x1, y1);
-              parent.vertex(x2, y2);
-              parent.vertex(x3, y3);
-              parent.endShape();
-            }
-
-
+        if ( Math.abs(target.y - source.y) >= Math.abs(target.x - source.x)) {  // go up || down
+          if (target.y < source.y) { // go up
+            goUpThenSide(scale, source, target);
+          } else {  // go down
+            goUpThenSide(scale, target, source);
           }
-
-          /*parent.line( x1* levelMultiplier * scale,
-              y1 * levelMultiplier * scale,
-              x2 * levelMultiplier * scale,
-              y2 * levelMultiplier * scale);*/
-
-
-          parent.strokeWeight(1);
         } else {
-          System.out.println("Going outerelse ");
-          parent.fill(parent.color(255, 0, 0));
-          int x = (gateLevels.get(currentNodeName).x * levelMultiplier) * scale;
-          int y = (currentNode.y + 5) * scale;
-          parent.line(x , y, (x + 4), (y + 4));
-          parent.line(x , (y + 4), (x + 4), y);
-          parent.text(nextNodeName, x + 12, y + 12);
+          System.out.println("Going else ");
+          if (target.x < source.x) { // go left
+            drawSideThenUp(scale, source, target);
+          } else {  // go right
+            drawSideThenUp(scale, target, source);
+          }
         }
+        parent.strokeWeight(1);
+
+        drawSubwayNode(currentNode, scale);
+        drawSubwayNode(nextNode, scale);
       } else {
-        System.out.println("Did not find main.Node: " + currentNodeName);
+        System.out.println("Did not find one of the main.Node: " + currentNodeName + " || " + nextNodeName);
       }
       currentNodeObj = nextNodeObj;
     }
+  }
+
+  private void goUpThenSide(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going up ");
+    float x1 = (source.x * levelMultiplier + source.topCount++) * scale;
+    float y1 = source.y * levelMultiplier * scale;
+//              float x2 = (source.x* levelMultiplier + source.topCount) * scale;
+    float x2 = x1;
+    float y2 = (target.y * levelMultiplier + target.bottomCount++) * scale;
+    float x3 = (target.x* levelMultiplier) * scale;
+//              float y3 = (target.y* levelMultiplier + target.bottomCount) * scale;
+    float y3 = y2;
+
+    parent.beginShape();
+    parent.noFill();
+    parent.vertex(x1, y1);
+    parent.vertex(x2, y2);
+    parent.vertex(x3, y3);
+    parent.endShape();
+  }
+
+  private void drawSideThenUp(int scale, NodeNumbers source, NodeNumbers target) {
+    float x1 = (source.x * levelMultiplier + source.leftCount++) * scale;
+    float y1 = source.y * levelMultiplier * scale;
+    float x2 = (target.x * levelMultiplier + source.rightCount++) * scale;
+    float y2 = y1;
+//              float x3 = (target.x* levelMultiplier) * scale;
+    float x3 = x2;
+    float y3 = (target.y* levelMultiplier + target.bottomCount++) * scale;
+
+    parent.beginShape();
+    parent.noFill();
+    parent.vertex(x1, y1);
+    parent.vertex(x2, y2);
+    parent.vertex(x3, y3);
+    parent.endShape();
   }
 
   private void drawNode(Node node, int scale) {
@@ -498,17 +467,15 @@ public class Graph {
   private void drawSubwayNode(Node node, int scale) {
     parent.println("drawing main.Node: " + node.getLabel());
     parent.fill(node.getNodeColor());
-//    parent.ellipse((gateLevels.get(node.getLabel()).v1() * levelMultiplier) * scale, node.y * scale, 8, 8);
     parent.ellipse(
         (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale,
         (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale,
         8,
         8);
     if(node.getLabel() != null){
-//      parent.text(node.getLabel(), (gateLevels.get(node.getLabel()).v1() * levelMultiplier) * scale + 6, node.y * scale + 6);
       parent.text(node.getLabel(),
           (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale + 6,
-          (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale + 6);
+          (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale - 12);
     }
   }
 
