@@ -71,14 +71,30 @@ public class Sketch extends PApplet {
     //sensor.draw(scale);
 
 //    JSONObject obj = loadJSONObject("/Users/atuladhar/projects/vastChallenge/processing/sketch_graph/test.json");
-    JSONObject obj = loadJSONObject("data/currentpath.json");
-    JSONArray timedPath = obj.getJSONArray("timedPath");
+//    JSONObject obj = loadJSONObject("data/currentpath.json");
+
+    String[] lines = loadStrings("data/currentpath.json");
+    for (String l: lines){
+      JSONObject obj = parseJSONObject(l);
+      JSONArray timedPath = obj.getJSONArray("timedPath");
+      sensor.drawSubwayMap(timedPath, scale);
+      break;
+    }
+
+    beginShape();
+    vertex(10, 10);
+    vertex(50, 10);
+    vertex(50, 50);
+    endShape();
+
 //    sensor.drawPathFromJson(timedPath, scale);
-    sensor.drawPathFromNewJson(timedPath, scale);
+//    sensor.drawPathFromNewJson(timedPath, scale);
+
+//    sensor.mapLevels();
 
     //Testing main.ES:
 //    testES(obj);
-    save("outputs/"+ obj.get("pathHash"));
+    save("outputs/TEST");
   }
 
   private void testES(JSONObject obj) {

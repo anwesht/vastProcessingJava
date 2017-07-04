@@ -13,3 +13,156 @@
     }
   }
 }
+
+
+// top paths
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "pathHash": [
+              -697673888,
+              -1186037756,
+              -1257949216,
+              -1267664540,
+              -1718376384,
+              -1742600988,
+              1321298180,
+              1395175844,
+              1498232192,
+              1572236860
+            ]
+          }
+        }
+      ],
+      "must_not": [],
+      "should": []
+    }
+  },
+  "from": 0,
+  "size": 10,
+  "sort": [],
+  "aggs": {
+    "group_by_path": {
+      "terms": {
+        "field": "pathHash"
+      }
+    }
+  }
+}
+
+// Testing zones
+ Integer levelMultiplier = 14;
+  Map<String, Integer> gateLevels = new HashMap<String, Integer>(){
+    {
+      put("entrance1", 1);
+      put("gate2", 1);
+      put("ranger-stop4", 1);
+      put("camping5", 1);
+      put("ranger-stop1", 1);
+
+      put("camping2", 2);
+
+      put("entrance0", 3);
+      put("gate0", 3);
+      put("gate1", 3);
+      put("camping0", 3);
+      put("general-gate7", 3);
+      put("general-gate0", 3);
+      put("general-gate1", 3);
+      put("camping3", 3);
+      put("camping4", 3);
+
+      put("gate7", 4);
+      put("ranger-stop7", 4);
+      put("ranger-stop2", 4);
+      put("general-gate4", 4);
+
+      put("gate6", 5);
+      put("entrance3", 5);
+
+      put("ranger-stop6", 6);
+      put("ranger-stop0", 6);
+
+      put("gate5", 7);
+      put("ranger-base", 7);
+      put("general-gate2", 7);
+
+      put("gate8", 8);
+      put("entrance4", 8);
+      put("general-gate5", 8);
+      put("general-gate6", 8);
+      put("camping1", 8);
+
+      put("camping6", 9);
+
+      put("gate3", 10);
+      put("ranger-stop3", 10);
+      put("ranger-stop5", 10);
+
+      put("gate4", 11);
+      put("entrance2", 11);
+      put("camping7", 11);
+      put("camping8", 11);
+      put("general-gate3", 11);
+    }
+  };
+
+
+// Tuple version
+Map<String, Tuple<Integer, Integer>> gateLevels = new HashMap<String, Tuple<Integer, Integer>>(){
+    {
+      put("entrance1", new Tuple(1, 5));
+      put("gate2", new Tuple(1, 1));
+      put("ranger-stop4", new Tuple(1, 1));
+      put("camping5", new Tuple(1, 1));
+      put("ranger-stop1", new Tuple(1, 1));
+
+      put("camping2", new Tuple(2, 2));
+
+      put("entrance0", new Tuple(3, 1));
+      put("gate0", new Tuple(3, 3));
+      put("gate1", new Tuple(3, 3));
+      put("camping0", new Tuple(3, 3));
+      put("general-gate7", new Tuple(3, 10));
+      put("general-gate0", new Tuple(3, 3));
+      put("general-gate1", new Tuple(3, 2));
+      put("camping3", new Tuple(3, 3));
+      put("camping4", new Tuple(3, 3));
+
+      put("gate7", new Tuple(4, 4));
+      put("ranger-stop7", new Tuple(4, 4));
+      put("ranger-stop2", new Tuple(4, 2));
+      put("general-gate4", new Tuple(4, 7));
+
+      put("gate6", new Tuple(5, 5));
+      put("entrance3", new Tuple(5, 11));
+
+      put("ranger-stop6", new Tuple(6, 6));
+      put("ranger-stop0", new Tuple(6, 2));
+
+      put("gate5", new Tuple(7, 7));
+      put("ranger-base", new Tuple(7, 7));
+      put("general-gate2", new Tuple(7, 2));
+
+      put("gate8", new Tuple(8, 8));
+      put("entrance4", new Tuple(8, 13));
+      put("general-gate5", new Tuple(8, 8));
+      put("general-gate6", new Tuple(8, 8));
+      put("camping1", new Tuple(8, 8));
+
+      put("camping6", new Tuple(9, 9));
+
+      put("gate3", new Tuple(10, 10));
+      put("ranger-stop3", new Tuple(10, 10));
+      put("ranger-stop5", new Tuple(10, 10));
+
+      put("gate4", new Tuple(11, 11));
+      put("entrance2", new Tuple(11, 6));
+      put("camping7", new Tuple(11, 11));
+      put("camping8", new Tuple(11, 11));
+      put("general-gate3", new Tuple(11, 11));
+    }
+  };
