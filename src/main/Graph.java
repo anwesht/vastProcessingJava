@@ -286,11 +286,17 @@ public class Graph {
   class NodeNumbers {
     int x, y;
     int topCount, bottomCount, leftCount, rightCount;
+    int topLeftCount, topRightCount;
+    int leftUpCount, leftDownCount;
+    int rightUpCount, rightDownCount;
 
     public NodeNumbers(int x, int y) {
       this.x = x;
       this.y = y;
       topCount = bottomCount = leftCount = rightCount = 0;
+      topLeftCount = topRightCount = 0;
+      leftUpCount = leftDownCount = 0;
+      rightUpCount = rightDownCount = 0;
     }
   }
 
@@ -305,30 +311,35 @@ public class Graph {
 
       put("camping2", new NodeNumbers(2, 2));
 
-      put("entrance0", new NodeNumbers(3, 1));
+//      put("entrance0", new NodeNumbers(3, 1));
+      put("entrance0", new NodeNumbers(4, 1));
       put("gate0", new NodeNumbers(3, 3));
       put("gate1", new NodeNumbers(3, 3));
       put("camping0", new NodeNumbers(3, 3));
       put("general-gate7", new NodeNumbers(3, 10));
       put("general-gate0", new NodeNumbers(3, 3));
-      put("general-gate1", new NodeNumbers(3, 2));
+//      put("general-gate1", new NodeNumbers(3, 2));
+      put("general-gate1", new NodeNumbers(5, 2));
       put("camping3", new NodeNumbers(3, 3));
       put("camping4", new NodeNumbers(3, 3));
 
       put("gate7", new NodeNumbers(4, 4));
       put("ranger-stop7", new NodeNumbers(4, 4));
-      put("ranger-stop2", new NodeNumbers(4, 2));
+//      put("ranger-stop2", new NodeNumbers(4, 2));
+      put("ranger-stop2", new NodeNumbers(6, 2));
       put("general-gate4", new NodeNumbers(4, 7));
 
       put("gate6", new NodeNumbers(5, 5));
       put("entrance3", new NodeNumbers(5, 11));
 
       put("ranger-stop6", new NodeNumbers(6, 6));
-      put("ranger-stop0", new NodeNumbers(6, 2));
+//      put("ranger-stop0", new NodeNumbers(6, 2));
+      put("ranger-stop0", new NodeNumbers(7, 2));
 
       put("gate5", new NodeNumbers(7, 7));
       put("ranger-base", new NodeNumbers(7, 7));
-      put("general-gate2", new NodeNumbers(7, 2));
+//      put("general-gate2", new NodeNumbers(7, 2));
+      put("general-gate2", new NodeNumbers(8, 2));
 
       put("gate8", new NodeNumbers(8, 8));
       put("entrance4", new NodeNumbers(8, 13));
@@ -362,6 +373,12 @@ public class Graph {
     }
   }
 
+  void drawAllSubwayNodes(int scale) {
+    for (Map.Entry<String, Node> g : getNamedNodes().entrySet()) {
+      drawSubwayNode(g.getValue(), scale);
+    }
+  }
+
   void drawLevelsGrid(int scale) {
     for (Map.Entry<String, NodeNumbers> g : gateLevels.entrySet()) {
       parent.stroke(200, 200, 200);
@@ -371,9 +388,6 @@ public class Graph {
   }
 
   void drawSubwayMap(JSONArray pathNodes, int scale) {
-
-//    JSONObject currentNodeObj = pathNodes.getJSONObject(pathNodes.size() - 1);  // data is in reverse order. Therefore, looping backwards
-//    for(int i = pathNodes.size() - 2; i >= 0; i--) {
     drawLevelsGrid(scale);
 
     JSONObject currentNodeObj = pathNodes.getJSONObject(0);
@@ -396,16 +410,19 @@ public class Graph {
 
         if ( Math.abs(target.y - source.y) >= Math.abs(target.x - source.x)) {  // go up || down
           if (target.y < source.y) { // go up
-            goUpThenSide(scale, source, target);
+            if(target.x < source.x) drawUpThenLeft(scale, source, target);
+            else drawUpThenRight(scale, source, target);
           } else {  // go down
-            goUpThenSide(scale, target, source);
+            if(source.x < target.x) drawLeftThenUp(scale, target, source);
+            else drawUpThenRight(scale, target, source);
           }
         } else {
-          System.out.println("Going else ");
           if (target.x < source.x) { // go left
-            drawSideThenUp(scale, source, target);
+            if(target.y < source.y) drawLeftThenUp(scale, source, target);
+            else drawLeftThenDown(scale, target, source);
           } else {  // go right
-            drawSideThenUp(scale, target, source);
+            if(source.y < target.y) drawLeftThenUp(scale, target, source);
+            else drawLeftThenDown(scale, target, source);
           }
         }
         parent.strokeWeight(1);
@@ -419,17 +436,7 @@ public class Graph {
     }
   }
 
-  private void goUpThenSide(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("Going up ");
-    float x1 = (source.x * levelMultiplier + source.topCount++) * scale;
-    float y1 = source.y * levelMultiplier * scale;
-//              float x2 = (source.x* levelMultiplier + source.topCount) * scale;
-    float x2 = x1;
-    float y2 = (target.y * levelMultiplier + target.bottomCount++) * scale;
-    float x3 = (target.x* levelMultiplier) * scale;
-//              float y3 = (target.y* levelMultiplier + target.bottomCount) * scale;
-    float y3 = y2;
-
+  private void drawSubwayLine(float x1, float y1, float x2, float y2, float x3, float y3) {
     parent.beginShape();
     parent.noFill();
     parent.vertex(x1, y1);
@@ -438,21 +445,67 @@ public class Graph {
     parent.endShape();
   }
 
-  private void drawSideThenUp(int scale, NodeNumbers source, NodeNumbers target) {
-    float x1 = (source.x * levelMultiplier + source.leftCount++) * scale;
+  private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going up then up ");
+    float x1 = (source.x * levelMultiplier - source.topLeftCount++) * scale;
     float y1 = source.y * levelMultiplier * scale;
-    float x2 = (target.x * levelMultiplier + source.rightCount++) * scale;
-    float y2 = y1;
-//              float x3 = (target.x* levelMultiplier) * scale;
-    float x3 = x2;
-    float y3 = (target.y* levelMultiplier + target.bottomCount++) * scale;
 
-    parent.beginShape();
-    parent.noFill();
-    parent.vertex(x1, y1);
-    parent.vertex(x2, y2);
-    parent.vertex(x3, y3);
-    parent.endShape();
+    float x2 = x1;
+    float y2 = (target.y * levelMultiplier + target.rightDownCount++) * scale;
+
+    float x3 = (target.x * levelMultiplier) * scale;
+    float y3 = y2;
+
+    drawSubwayLine(x1, y1, x2, y2, x3, y3);
+  }
+
+  private void drawUpThenRight(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going up then right");
+    float x1 = (source.x * levelMultiplier + source.topRightCount++) * scale;
+    float y1 = source.y * levelMultiplier * scale;
+//    target.leftDownCount++;
+    target.leftUpCount++;
+
+
+    float x2 = x1;
+    float y2 = (target.y * levelMultiplier + target.leftDownCount++) * scale;
+
+    float x3 = (target.x * levelMultiplier) * scale;
+    float y3 = y2;
+
+    drawSubwayLine(x1, y1, x2, y2, x3, y3);
+  }
+
+  private void drawLeftThenUp(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going left then up");
+
+    float x1 = (source.x * levelMultiplier) * scale;
+    float y1 = (source.y * levelMultiplier - source.leftUpCount++)* scale;
+
+    float x2 = (target.x * levelMultiplier + target.rightDownCount++) * scale;
+    float y2 = y1;
+
+    float x3 = x2;
+//    float y3 = (target.y* levelMultiplier + target.bottomCount++) * scale;
+    float y3 = (target.y * levelMultiplier ) * scale;
+
+    drawSubwayLine(x1, y1, x2, y2, x3, y3);
+  }
+
+  private void drawLeftThenDown(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going left then down");
+
+    float x1 = (source.x * levelMultiplier) * scale;
+    float y1 = (source.y * levelMultiplier + source.leftDownCount++) * scale;
+
+    float x2 = (target.x * levelMultiplier + target.rightUpCount++) * scale;
+    float y2 = y1;
+
+    float x3 = x2;
+//    float y3 = (target.y* levelMultiplier + target.bottomCount++) * scale;
+    float y3 = (target.y * levelMultiplier ) * scale;
+
+    drawSubwayLine(x1, y1, x2, y2, x3, y3);
   }
 
   private void drawNode(Node node, int scale) {
