@@ -76,11 +76,14 @@ public class Sketch extends PApplet {
     String[] lines = loadStrings("data/currentpath.json");
     int count = 0;
     for (String l: lines){
-      JSONObject obj = parseJSONObject(l);
-      JSONArray timedPath = obj.getJSONArray("timedPath");
-      println("\nDrawing path: " + ++count + " : "+ obj.getString("path"));
-      sensor.drawSubwayMap(timedPath, scale);
-      if (count == 3) break;
+      count++;
+//      if (count == 5) {
+        JSONObject obj = parseJSONObject(l);
+        JSONArray timedPath = obj.getJSONArray("timedPath");
+        println("\nDrawing path: " + count + " : "+ obj.getString("path"));
+        sensor.drawSubwayMap(timedPath, scale);
+//      }
+      if (count == 6) break;
     }
 
 //    sensor.drawAllSubwayNodes(scale);

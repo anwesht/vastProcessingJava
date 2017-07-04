@@ -1,10 +1,8 @@
 package main; /**
  * Created by atuladhar on 6/27/17.
  */
-import org.elasticsearch.common.collect.Tuple;
 import processing.core.PApplet;
 import processing.core.PImage;
-import processing.core.PVector;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
 
@@ -342,7 +340,8 @@ public class Graph {
       put("general-gate2", new NodeNumbers(8, 2));
 
       put("gate8", new NodeNumbers(8, 8));
-      put("entrance4", new NodeNumbers(8, 13));
+//      put("entrance4", new NodeNumbers(8, 13));
+      put("entrance4", new NodeNumbers(9, 12));
       put("general-gate5", new NodeNumbers(8, 8));
       put("general-gate6", new NodeNumbers(8, 8));
       put("camping1", new NodeNumbers(8, 8));
@@ -407,21 +406,28 @@ public class Graph {
 
         NodeNumbers source = gateLevels.get(currentNodeName);
         NodeNumbers target = gateLevels.get(nextNodeName);
-
         if ( Math.abs(target.y - source.y) >= Math.abs(target.x - source.x)) {  // go up || down
           if (target.y < source.y) { // go up
-            if(target.x < source.x) drawUpThenLeft(scale, source, target);
+            if (source.x == target.x) {
+              drawStraightUp(scale, source, target);
+            } else if(target.x < source.x) drawUpThenLeft(scale, source, target);
             else drawUpThenRight(scale, source, target);
           } else {  // go down
-            if(source.x < target.x) drawLeftThenUp(scale, target, source);
+            if (source.x == target.x) {
+              drawStraightDown(scale, source, target);
+            } else if(source.x < target.x) drawLeftThenUp(scale, target, source);
             else drawUpThenRight(scale, target, source);
           }
         } else {
           if (target.x < source.x) { // go left
-            if(target.y < source.y) drawLeftThenUp(scale, source, target);
+            if (source.y == target.y) {
+              drawStraightLeft(scale, source, target);
+            } else if(target.y < source.y) drawLeftThenUp(scale, source, target);
             else drawLeftThenDown(scale, target, source);
           } else {  // go right
-            if(source.y < target.y) drawLeftThenUp(scale, target, source);
+            if (source.y == target.y) {
+              drawStraightRight(scale, source, target);
+            } else if(source.y < target.y) drawLeftThenUp(scale, target, source);
             else drawLeftThenDown(scale, target, source);
           }
         }
@@ -436,6 +442,60 @@ public class Graph {
     }
   }
 
+  private void drawStraightRight(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight right");
+    int x1 = (source.x * levelMultiplier ) * scale;
+    int y1 = (source.y * levelMultiplier + source.rightDownCount++ )* scale;
+
+    int x2 = (target.x * levelMultiplier ) * scale;
+    int y2 = y1;
+    parent.line(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  private void drawStraightLeft(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight left");
+    int x1 = (source.x * levelMultiplier ) * scale;
+    int y1 = (source.y * levelMultiplier + source.leftDownCount++ )* scale;
+
+    int x2 = (target.x * levelMultiplier ) * scale;
+    int y2 = y1;
+    parent.line(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  private void drawStraightDown(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight down");
+    int x1 = (source.x * levelMultiplier - source.leftDownCount++) * scale;
+    int y1 = source.y * levelMultiplier * scale;
+
+    int x2 = x1;
+    int y2 = (target.y * levelMultiplier + target.topLeftCount++) * scale;
+    parent.line(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  private void drawStraightUp(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight up");
+    int x1 = (source.x * levelMultiplier - (source.topLeftCount > target.leftDownCount ? source.topLeftCount : target.leftDownCount )) * scale;
+    source.topLeftCount++;
+    target.leftDownCount++;
+
+    int y1 = source.y * levelMultiplier * scale;
+
+    if (source.topRightCount == 0) source.topRightCount++;
+
+    int x2 = x1;
+    int y2 = (target.y * levelMultiplier + ((target.leftDownCount > target.rightDownCount) ? target.leftDownCount : target.rightDownCount)) * scale;
+
+    parent.line(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
   private void drawSubwayLine(float x1, float y1, float x2, float y2, float x3, float y3) {
     parent.beginShape();
     parent.noFill();
@@ -443,10 +503,13 @@ public class Graph {
     parent.vertex(x2, y2);
     parent.vertex(x3, y3);
     parent.endShape();
+
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x3, y3);
   }
 
-  private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("Going up then up ");
+  /*private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going up then left ");
     float x1 = (source.x * levelMultiplier - source.topLeftCount++) * scale;
     float y1 = source.y * levelMultiplier * scale;
 
@@ -457,6 +520,21 @@ public class Graph {
     float y3 = y2;
 
     drawSubwayLine(x1, y1, x2, y2, x3, y3);
+  }*/
+
+  private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("Going up then left ");
+    float x1 = (source.x * levelMultiplier - source.topLeftCount++) * scale;
+    float y1 = (source.y * levelMultiplier - (source.leftUpCount > source.rightUpCount? source.leftUpCount++ : source.rightUpCount++))* scale;
+
+    float x2 = x1;
+    float y2 = (target.y * levelMultiplier + target.rightDownCount++) * scale;
+
+//    float x3 = (target.x * levelMultiplier) * scale;
+    float x3 = (target.x * levelMultiplier + target.topRightCount++) * scale;
+    float y3 = y2;
+
+    drawSubwayLine(x1, y1, x2, y2, x3, y3);
   }
 
   private void drawUpThenRight(int scale, NodeNumbers source, NodeNumbers target) {
@@ -464,8 +542,9 @@ public class Graph {
     float x1 = (source.x * levelMultiplier + source.topRightCount++) * scale;
     float y1 = source.y * levelMultiplier * scale;
 //    target.leftDownCount++;
+    if(source.topLeftCount == 0) source.topLeftCount++;
     target.leftUpCount++;
-
+//    if(target.leftDownCount == 0) target.leftDownCount++;
 
     float x2 = x1;
     float y2 = (target.y * levelMultiplier + target.leftDownCount++) * scale;
@@ -519,17 +598,19 @@ public class Graph {
 
   private void drawSubwayNode(Node node, int scale) {
     parent.println("drawing main.Node: " + node.getLabel());
-    parent.fill(node.getNodeColor());
-    parent.ellipse(
+    drawEllipse(node.getNodeColor(),
         (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale,
-        (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale,
-        8,
-        8);
+        (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale);
     if(node.getLabel() != null){
       parent.text(node.getLabel(),
           (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale + 6,
           (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale - 12);
     }
+  }
+
+  private void drawEllipse(int color, float a, float b) {
+    parent.fill(color);
+    parent.ellipse(a, b, 8,8);
   }
 
   private void drawEdge(Edge e, int scale) {
