@@ -1,3 +1,9 @@
+// Bulk insert data to elastic search 
+curl -s -H "Content-Type: application/x-ndjson" -XPOST localhost:9200/_bulk --data-binary "@estimateCompleteWIthStartEndRecord.json" > output
+
+Note: Need to add: { "index" : { "_index" : "<INSERT_INDEX_HERE", "_type" : "<INSERT_TYPE_HERE"} } -> before each json
+
+
 // Find all the entries at the border with start and end time same.
 {
   "query": {
@@ -166,3 +172,93 @@ Map<String, Tuple<Integer, Integer>> gateLevels = new HashMap<String, Tuple<Inte
       put("general-gate3", new Tuple(11, 11));
     }
   };
+
+// Testing path hash:
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "pathHash": -1718376384
+          }
+        }
+      ],
+      "must_not": [],
+      "should": []
+    }
+  },
+  "from": 0,
+  "size": 10,
+  "sort": [],
+  "aggs": {
+    "CountPath": {
+      "terms": {
+        "field": "path.keyword"
+      }
+    }
+  }
+}
+
+// Multiple Total Days in Park Count.
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match_all": {}
+        }
+      ],
+      "must_not": [],
+      "should": []
+    }
+  },
+  "from": 0,
+  "size": 10,
+  "sort": [],
+  "aggs": {
+    "countDays": {
+      "terms": {
+        "field": "totalDaysInPark",
+"order" : { "_term" : "mesc" }
+      }
+    }
+  }
+}
+
+
+// car which camps from place to place.
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "startGate.keyword": "camping*"
+          }
+        },
+        {
+          "wildcard": {
+            "endGate.keyword": "camping*"
+          }
+        }
+      ],
+      "must_not": [],
+      "should": []
+    }
+  },
+  "from": 0,
+  "size": 10,
+  "sort": [],
+  "aggs": {
+    "countDays": {
+      "terms": {
+        "field": "carId.keyword",
+        "order": {
+          "_term": "desc"
+        }
+      }
+    }
+ 
+ }
+}

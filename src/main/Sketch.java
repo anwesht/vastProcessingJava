@@ -74,14 +74,25 @@ public class Sketch extends PApplet {
 //    JSONObject obj = loadJSONObject("data/currentpath.json");
 
     String[] lines = loadStrings("data/currentpath.json");
+
+    Integer s = Integer.parseInt("7fc97f", 16);
+
+   String[] colors = {
+       "127,201,127",
+       "190,174,212",
+       "253,192,134",
+       "152,78,163",
+       "56,108,176",
+       "240,2,127" };
+
     int count = 0;
     for (String l: lines){
       count++;
 //      if (count == 5) {
-        JSONObject obj = parseJSONObject(l);
-        JSONArray timedPath = obj.getJSONArray("timedPath");
-        println("\nDrawing path: " + count + " : "+ obj.getString("path"));
-        sensor.drawSubwayMap(timedPath, scale);
+      JSONObject obj = parseJSONObject(l);
+      JSONArray timedPath = obj.getJSONArray("timedPath");
+      println("\nDrawing path: " + count + " : "+ obj.getString("path"));
+      sensor.drawSubwayMap(colors[count-1], timedPath, scale);
 //      }
       if (count == 6) break;
     }
@@ -89,14 +100,14 @@ public class Sketch extends PApplet {
 //    sensor.drawAllSubwayNodes(scale);
 
     // Shape Test: Create a rounded edge.
-    beginShape();
+    /*beginShape();
     vertex(10, 10);
     vertex(50, 10);
     curveVertex(50, 10);
     curveVertex(53, 13);
     vertex(53, 13);
     vertex(53, 50);
-    endShape();
+    endShape();*/
 
 //    sensor.drawPathFromJson(timedPath, scale);
 //    sensor.drawPathFromNewJson(timedPath, scale);

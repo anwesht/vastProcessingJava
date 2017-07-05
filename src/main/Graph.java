@@ -386,8 +386,12 @@ public class Graph {
     }
   }
 
-  void drawSubwayMap(JSONArray pathNodes, int scale) {
-    drawLevelsGrid(scale);
+
+  String SUBWAY_COLOR = "";
+
+  void drawSubwayMap(String color, JSONArray pathNodes, int scale) {
+//    drawLevelsGrid(scale);
+    SUBWAY_COLOR = new String(color);
 
     JSONObject currentNodeObj = pathNodes.getJSONObject(0);
     parent.stroke(parent.random(255), parent.random(255), parent.random(255));
@@ -449,9 +453,26 @@ public class Graph {
 
     int x2 = (target.x * levelMultiplier ) * scale;
     int y2 = y1;
-    parent.line(x1, y1, x2, y2);
+
+    drawStraightLine(x1, y1, x2, y2);
+
     drawEllipse(parent.color(250, 250, 250), x1, y1);
     drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  private void drawStraightLine(int x1, int y1, int x2, int y2) {
+    parent.stroke(255);
+    parent.strokeWeight(4);
+    parent.line(x1, y1, x2, y2);
+
+    String[] split = SUBWAY_COLOR.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    parent.stroke(r, g, b);
+    parent.strokeWeight(3);
+    parent.line(x1, y1, x2, y2);
   }
 
   private void drawStraightLeft(int scale, NodeNumbers source, NodeNumbers target) {
@@ -461,7 +482,9 @@ public class Graph {
 
     int x2 = (target.x * levelMultiplier ) * scale;
     int y2 = y1;
-    parent.line(x1, y1, x2, y2);
+
+    drawStraightLine(x1, y1, x2, y2);
+
     drawEllipse(parent.color(250, 250, 250), x1, y1);
     drawEllipse(parent.color(250, 250, 250), x2, y2);
   }
@@ -473,7 +496,7 @@ public class Graph {
 
     int x2 = x1;
     int y2 = (target.y * levelMultiplier + target.topLeftCount++) * scale;
-    parent.line(x1, y1, x2, y2);
+    drawStraightLine(x1, y1, x2, y2);
     drawEllipse(parent.color(250, 250, 250), x1, y1);
     drawEllipse(parent.color(250, 250, 250), x2, y2);
   }
@@ -491,13 +514,30 @@ public class Graph {
     int x2 = x1;
     int y2 = (target.y * levelMultiplier + ((target.leftDownCount > target.rightDownCount) ? target.leftDownCount : target.rightDownCount)) * scale;
 
-    parent.line(x1, y1, x2, y2);
+    drawStraightLine(x1, y1, x2, y2);
     drawEllipse(parent.color(250, 250, 250), x1, y1);
     drawEllipse(parent.color(250, 250, 250), x2, y2);
   }
 
   private void drawSubwayLine(float x1, float y1, float x2, float y2, float x3, float y3) {
     parent.beginShape();
+    parent.stroke(255);
+    parent.strokeWeight(4);
+    parent.noFill();
+    parent.vertex(x1, y1);
+    parent.vertex(x2, y2);
+    parent.vertex(x3, y3);
+    parent.endShape();
+
+    parent.beginShape();
+//    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
+    String[] split = SUBWAY_COLOR.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    parent.stroke(r, g, b);
+    parent.strokeWeight(3);
     parent.noFill();
     parent.vertex(x1, y1);
     parent.vertex(x2, y2);
