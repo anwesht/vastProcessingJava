@@ -604,6 +604,11 @@ public class Graph {
     int y1 = source.y * levelMultiplier * scale;
 //    int y1 = (source.y * levelMultiplier + source.leftDownCount )* scale;
 
+    if (source.topRightCount == 0) source.topRightCount++;
+    if (source.rightDownCount== 0) source.rightDownCount++;
+    if (target.topRightCount == 0) target.topRightCount++;
+
+
     int x2 = x1;
     int y2 = (target.y * levelMultiplier + target.topLeftCount++) * scale;
     drawStraightLine(x1, y1, x2, y2);
@@ -621,6 +626,7 @@ public class Graph {
     int y1 = source.y * levelMultiplier * scale;
 
     if (source.topRightCount == 0) source.topRightCount++;
+    if (target.rightDownCount== 0) target.rightDownCount++;
 
     int x2 = x1;
     int y2 = (target.y * levelMultiplier + ((target.leftDownCount > target.rightDownCount) ? target.leftDownCount : target.rightDownCount)) * scale;

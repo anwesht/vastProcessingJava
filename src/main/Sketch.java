@@ -110,6 +110,8 @@ public class Sketch extends PApplet {
       float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
 
       rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
+
+      fill(0, 0, 0);
       text(obj.getString("path"),
           x + sensor.levelMultiplier + 5,
           y);
