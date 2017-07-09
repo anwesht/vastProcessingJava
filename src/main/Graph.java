@@ -41,6 +41,8 @@ public class Graph {
   Map<String, Node> namedNodes;
   private PImage mapImage;
 
+  private Set<Node> gatesToLabel;
+
   Graph(PApplet p, PImage img) {
     this.parent = p;
     System.out.println("here: " + p.getClass());
@@ -48,6 +50,7 @@ public class Graph {
     this.width = img.width;
     this.namedNodes = new LinkedHashMap<String, Node>();
     this.sensorCounts = new LinkedHashMap<String, Integer>();
+    this.gatesToLabel = new HashSet<Node>();
     setColors();
   }
 
@@ -167,7 +170,7 @@ public class Graph {
     }
   }
 
-  void drawPathFromNewJson(JSONArray pathNodes, int scale) {
+  /*void drawPathFromNewJson(JSONArray pathNodes, int scale) {
     int multipleEntryCount = 1;
 
     JSONObject currentNodeObj = pathNodes.getJSONObject(pathNodes.size() - 1);  // data is in reverse order. Therefore, looping backwards
@@ -221,18 +224,19 @@ public class Graph {
       }
       currentNodeObj = nextNodeObj;
     }
-  }
+  }*/
 
-
-  void drawPathFromJson(JSONArray pathNodes, int scale) {
+  void drawPathFromNewJson(String c, JSONArray pathNodes, int scale) {
+    SUBWAY_COLOR = c;
     int multipleEntryCount = 1;
 
-    JSONObject currentNodeObj = pathNodes.getJSONObject(pathNodes.size() - 1);  // data is in reverse order. Therefore, looping backwards
-    for(int i = pathNodes.size() - 2; i >= 0; i--) {
-      String currentNodeName = currentNodeObj.getString("_2");
+    JSONObject currentNodeObj = pathNodes.getJSONObject(0);
+
+    for(int i = 1; i < pathNodes.size(); i++) {
+      String currentNodeName = currentNodeObj.getString("gate");
 
       JSONObject nextNodeObj = pathNodes.getJSONObject(i);
-      String nextNodeName = nextNodeObj.getString("_2");
+      String nextNodeName = nextNodeObj.getString("gate");
 
       if (this.getNamedNodes().containsKey(currentNodeName)) {
         Node currentNode = this.getNamedNodes().get(currentNodeName);
@@ -240,16 +244,26 @@ public class Graph {
         if (this.getNamedNodes().containsKey(nextNodeName)) {
           List<Edge> edgeList = currentNode.getAllEdges(nextNodeName);
           int edgeCount = 0;
+          /*for (Edge e : edgeList) {
+            edgeCount++;
+            if (e != null){
+              multipleEntryCount = 1;
+              if (edgeCount == 1) drawEdge(e, scale);
+              else drawEdgeDup(e, scale, parent.color(150*edgeCount % 255, 0,  0));
+              float speed = nextNodeObj.getInt("speed");
+              int x = (currentNode.x + 2) * scale;
+              int y = (currentNode.y - 2 * edgeCount) * scale;
+              parent.text("Speed: " + speed + " mph", x, y);
+            }
+            drawNode(this.getNamedNodes().get(nextNodeName), scale);
+          }*/
+
           for (Edge e : edgeList) {
             edgeCount++;
             if (e != null){
               multipleEntryCount = 1;
               if (edgeCount == 1) drawEdge(e, scale);
               else drawEdgeDup(e, scale, parent.color(150*edgeCount % 255, 0,  0));
-              float speed = ((float)12/200 * e.pixelDistance * 60 * 60) / nextNodeObj.getInt("_3");
-              int x = (currentNode.x + 2) * scale;
-              int y = (currentNode.y - 2 * edgeCount) * scale;
-              parent.text("Speed: " + speed + " mph", x, y);
             }
             drawNode(this.getNamedNodes().get(nextNodeName), scale);
           }
@@ -268,8 +282,8 @@ public class Graph {
           parent.line(x , y, (x + 4), (y + 4));
           parent.line(x , (y + 4), (x + 4), y);
           parent.text(nextNodeName, x + 12, y + 12);
-          if (i > 0) currentNodeObj = (JSONObject) pathNodes.getJSONObject(i-1);
-          i--;
+          if (i < pathNodes.size() - 1) currentNodeObj = pathNodes.getJSONObject(i+1);
+          i++;
           continue;
         }
       } else {
@@ -283,7 +297,6 @@ public class Graph {
 
   class NodeNumbers {
     int x, y;
-    int topCount, bottomCount, leftCount, rightCount;
     int topLeftCount, topRightCount;
     int leftUpCount, leftDownCount;
     int rightUpCount, rightDownCount;
@@ -291,17 +304,30 @@ public class Graph {
     public NodeNumbers(int x, int y) {
       this.x = x;
       this.y = y;
-      topCount = bottomCount = leftCount = rightCount = 0;
       topLeftCount = topRightCount = 0;
       leftUpCount = leftDownCount = 0;
       rightUpCount = rightDownCount = 0;
     }
+
+    public int getMaxCount () {
+      int maxCount = 0;
+      if (maxCount < topLeftCount) maxCount = topLeftCount;
+      if (maxCount < topRightCount) maxCount = topRightCount;
+      if (maxCount < leftUpCount) maxCount = leftUpCount;
+      if (maxCount < leftDownCount) maxCount = leftDownCount;
+      if (maxCount < rightUpCount) maxCount = rightUpCount;
+      if (maxCount < rightDownCount) maxCount = rightDownCount;
+
+      return maxCount;
+    }
+
   }
 
 
   Map<String, NodeNumbers> gateLevels = new HashMap<String, NodeNumbers>(){
     {
-      put("entrance1", new NodeNumbers(1, 5));
+//      put("entrance1", new NodeNumbers(1, 5));
+      put("entrance1", new NodeNumbers(1, 4));
       put("gate2", new NodeNumbers(1, 1));
       put("ranger-stop4", new NodeNumbers(1, 1));
       put("camping5", new NodeNumbers(1, 1));
@@ -314,7 +340,8 @@ public class Graph {
       put("gate0", new NodeNumbers(3, 3));
       put("gate1", new NodeNumbers(3, 3));
       put("camping0", new NodeNumbers(3, 3));
-      put("general-gate7", new NodeNumbers(3, 10));
+//      put("general-gate7", new NodeNumbers(3, 10));
+      put("general-gate7", new NodeNumbers(3, 9));
       put("general-gate0", new NodeNumbers(3, 3));
 //      put("general-gate1", new NodeNumbers(3, 2));
       put("general-gate1", new NodeNumbers(5, 2));
@@ -325,10 +352,12 @@ public class Graph {
       put("ranger-stop7", new NodeNumbers(4, 4));
 //      put("ranger-stop2", new NodeNumbers(4, 2));
       put("ranger-stop2", new NodeNumbers(6, 2));
-      put("general-gate4", new NodeNumbers(4, 7));
+//      put("general-gate4", new NodeNumbers(4, 7));
+      put("general-gate4", new NodeNumbers(4, 6));
 
       put("gate6", new NodeNumbers(5, 5));
-      put("entrance3", new NodeNumbers(5, 11));
+//      put("entrance3", new NodeNumbers(5, 11));
+      put("entrance3", new NodeNumbers(5, 10));
 
       put("ranger-stop6", new NodeNumbers(6, 6));
 //      put("ranger-stop0", new NodeNumbers(6, 2));
@@ -341,8 +370,10 @@ public class Graph {
 
       put("gate8", new NodeNumbers(8, 8));
 //      put("entrance4", new NodeNumbers(8, 13));
-      put("entrance4", new NodeNumbers(9, 12));
-      put("general-gate5", new NodeNumbers(8, 8));
+//      put("entrance4", new NodeNumbers(9, 12));
+      put("entrance4", new NodeNumbers(9, 11));
+//      put("general-gate5", new NodeNumbers(8, 8));
+      put("general-gate5", new NodeNumbers(8, 7));
       put("general-gate6", new NodeNumbers(8, 8));
       put("camping1", new NodeNumbers(8, 8));
 
@@ -353,10 +384,13 @@ public class Graph {
       put("ranger-stop5", new NodeNumbers(10, 10));
 
       put("gate4", new NodeNumbers(11, 11));
-      put("entrance2", new NodeNumbers(11, 6));
+//      put("entrance2", new NodeNumbers(11, 6));
+      put("entrance2", new NodeNumbers(11, 5));
       put("camping7", new NodeNumbers(11, 11));
       put("camping8", new NodeNumbers(11, 11));
       put("general-gate3", new NodeNumbers(11, 11));
+
+      put("legend", new NodeNumbers(1, 12));
     }
   };
 
@@ -391,10 +425,10 @@ public class Graph {
 
   void drawSubwayMap(String color, JSONArray pathNodes, int scale) {
 //    drawLevelsGrid(scale);
-    SUBWAY_COLOR = new String(color);
+    SUBWAY_COLOR = color;
 
     JSONObject currentNodeObj = pathNodes.getJSONObject(0);
-    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
+//    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
 
     for(int i = 1; i < pathNodes.size(); i++) {
       String currentNodeName = currentNodeObj.getString("gate");
@@ -408,8 +442,15 @@ public class Graph {
 
         parent.strokeWeight(4);
 
-        NodeNumbers source = gateLevels.get(currentNodeName);
-        NodeNumbers target = gateLevels.get(nextNodeName);
+        NodeNumbers source, target;
+        if (currentNodeName.hashCode() < nextNodeName.hashCode() ) {
+          source = gateLevels.get(currentNodeName);
+          target = gateLevels.get(nextNodeName);
+        } else {
+          source = gateLevels.get(nextNodeName);
+          target = gateLevels.get(currentNodeName);
+        }
+
         if ( Math.abs(target.y - source.y) >= Math.abs(target.x - source.x)) {  // go up || down
           if (target.y < source.y) { // go up
             if (source.x == target.x) {
@@ -446,18 +487,50 @@ public class Graph {
     }
   }
 
-  private void drawStraightRight(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("straight right");
-    int x1 = (source.x * levelMultiplier ) * scale;
-    int y1 = (source.y * levelMultiplier + source.rightDownCount++ )* scale;
+  public void markNodes(int scale) {
+    parent.println("gatestolabel: " + gatesToLabel.size());
+    for (Node n : gatesToLabel) {
+      NodeNumbers nodeInfo = gateLevels.get(n.getLabel());
+//      gateLevels.get(node.getLabel()).x * levelMultiplier) * scale
+      parent.noFill();
+      parent.stroke(n.getNodeColor());
+      parent.println("Drawing gate: " + n.getLabel());
+      /*int x1 = (nodeInfo.x) * levelMultiplier - (nodeInfo.topLeftCount > nodeInfo.leftDownCount ? nodeInfo.topLeftCount : nodeInfo.leftDownCount );
+      int y1 = (nodeInfo.y) * levelMultiplier - (nodeInfo.leftUpCount > nodeInfo.rightUpCount ? nodeInfo.leftUpCount : nodeInfo.rightUpCount );
+*/
+      int maxOffset = nodeInfo.getMaxCount();
 
-    int x2 = (target.x * levelMultiplier ) * scale;
-    int y2 = y1;
+//      int x1 = (nodeInfo.x) * levelMultiplier - maxOffset ;
+//      int y1 = (nodeInfo.y) * levelMultiplier - maxOffset;
 
-    drawStraightLine(x1, y1, x2, y2);
+      int x_offset = (nodeInfo.leftDownCount > nodeInfo.leftUpCount ? nodeInfo.leftDownCount : nodeInfo.leftUpCount);
+      int y_offset = (nodeInfo.leftDownCount > nodeInfo.rightDownCount ? nodeInfo.leftDownCount : nodeInfo.rightDownCount);
 
-    drawEllipse(parent.color(250, 250, 250), x1, y1);
-    drawEllipse(parent.color(250, 250, 250), x2, y2);
+      int x1 = (nodeInfo.x) * levelMultiplier - x_offset > 0 ? x_offset : 4;
+      int y1 = (nodeInfo.y) * levelMultiplier - y_offset > 0 ? y_offset : 4;
+
+//      int width = (nodeInfo.topRightCount > nodeInfo.leftUpCount ? nodeInfo.topRightCount : nodeInfo.leftUpCount );
+//      int height = (nodeInfo.leftDownCount > nodeInfo.rightDownCount ? nodeInfo.leftDownCount : nodeInfo.rightDownCount );
+
+      int width = (nodeInfo.topRightCount > nodeInfo.rightDownCount ? nodeInfo.topRightCount : nodeInfo.rightDownCount );
+      int height = (nodeInfo.leftDownCount > nodeInfo.rightDownCount ? nodeInfo.leftDownCount : nodeInfo.rightDownCount );
+
+      width = width > 0 ? width : 1;
+      height = height > 0 ? height : 1;
+
+
+      parent.rect(x1 * scale, y1 * scale, x_offset * 10, y_offset * 10, 7);
+//      parent.rect(x1 * scale - 8, y1 * scale-8, 15, 15, 5);
+    }
+  }
+
+  private void setStrokeColor() {
+    String[] split = SUBWAY_COLOR.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    parent.stroke(r, g, b);
   }
 
   private void drawStraightLine(int x1, int y1, int x2, int y2) {
@@ -465,58 +538,9 @@ public class Graph {
     parent.strokeWeight(4);
     parent.line(x1, y1, x2, y2);
 
-    String[] split = SUBWAY_COLOR.split(",");
-    int r = Integer.parseInt(split[0]);
-    int g = Integer.parseInt(split[1]);
-    int b = Integer.parseInt(split[2]);
-
-    parent.stroke(r, g, b);
+    setStrokeColor();
     parent.strokeWeight(3);
     parent.line(x1, y1, x2, y2);
-  }
-
-  private void drawStraightLeft(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("straight left");
-    int x1 = (source.x * levelMultiplier ) * scale;
-    int y1 = (source.y * levelMultiplier + source.leftDownCount++ )* scale;
-
-    int x2 = (target.x * levelMultiplier ) * scale;
-    int y2 = y1;
-
-    drawStraightLine(x1, y1, x2, y2);
-
-    drawEllipse(parent.color(250, 250, 250), x1, y1);
-    drawEllipse(parent.color(250, 250, 250), x2, y2);
-  }
-
-  private void drawStraightDown(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("straight down");
-    int x1 = (source.x * levelMultiplier - source.leftDownCount++) * scale;
-    int y1 = source.y * levelMultiplier * scale;
-
-    int x2 = x1;
-    int y2 = (target.y * levelMultiplier + target.topLeftCount++) * scale;
-    drawStraightLine(x1, y1, x2, y2);
-    drawEllipse(parent.color(250, 250, 250), x1, y1);
-    drawEllipse(parent.color(250, 250, 250), x2, y2);
-  }
-
-  private void drawStraightUp(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("straight up");
-    int x1 = (source.x * levelMultiplier - (source.topLeftCount > target.leftDownCount ? source.topLeftCount : target.leftDownCount )) * scale;
-    source.topLeftCount++;
-    target.leftDownCount++;
-
-    int y1 = source.y * levelMultiplier * scale;
-
-    if (source.topRightCount == 0) source.topRightCount++;
-
-    int x2 = x1;
-    int y2 = (target.y * levelMultiplier + ((target.leftDownCount > target.rightDownCount) ? target.leftDownCount : target.rightDownCount)) * scale;
-
-    drawStraightLine(x1, y1, x2, y2);
-    drawEllipse(parent.color(250, 250, 250), x1, y1);
-    drawEllipse(parent.color(250, 250, 250), x2, y2);
   }
 
   private void drawSubwayLine(float x1, float y1, float x2, float y2, float x3, float y3) {
@@ -531,12 +555,7 @@ public class Graph {
 
     parent.beginShape();
 //    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
-    String[] split = SUBWAY_COLOR.split(",");
-    int r = Integer.parseInt(split[0]);
-    int g = Integer.parseInt(split[1]);
-    int b = Integer.parseInt(split[2]);
-
-    parent.stroke(r, g, b);
+    setStrokeColor();
     parent.strokeWeight(3);
     parent.noFill();
     parent.vertex(x1, y1);
@@ -548,20 +567,73 @@ public class Graph {
     drawEllipse(parent.color(250, 250, 250), x3, y3);
   }
 
-  /*private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
-    System.out.println("Going up then left ");
-    float x1 = (source.x * levelMultiplier - source.topLeftCount++) * scale;
-    float y1 = source.y * levelMultiplier * scale;
+  // draw the new line at the bottom
+  private void drawStraightRight(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight right");
+    int x1 = (source.x * levelMultiplier ) * scale;
+    int y1 = (source.y * levelMultiplier + source.rightDownCount++ )* scale;
 
-    float x2 = x1;
-    float y2 = (target.y * levelMultiplier + target.rightDownCount++) * scale;
+    int x2 = (target.x * levelMultiplier ) * scale;
+    int y2 = y1;
 
-    float x3 = (target.x * levelMultiplier) * scale;
-    float y3 = y2;
+    drawStraightLine(x1, y1, x2, y2);
 
-    drawSubwayLine(x1, y1, x2, y2, x3, y3);
-  }*/
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
 
+  // draw the new line at the bottom
+  private void drawStraightLeft(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight left");
+    int x1 = (source.x * levelMultiplier ) * scale;
+    int y1 = (source.y * levelMultiplier + source.leftDownCount++ )* scale;
+
+    int x2 = (target.x * levelMultiplier ) * scale;
+    int y2 = y1;
+
+    drawStraightLine(x1, y1, x2, y2);
+
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  // draw the new line on the left
+  private void drawStraightDown(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight down");
+    int x1 = (source.x * levelMultiplier - source.leftDownCount++) * scale;
+    int y1 = source.y * levelMultiplier * scale;
+//    int y1 = (source.y * levelMultiplier + source.leftDownCount )* scale;
+
+    int x2 = x1;
+    int y2 = (target.y * levelMultiplier + target.topLeftCount++) * scale;
+    drawStraightLine(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  // draw the new line on the left
+  private void drawStraightUp(int scale, NodeNumbers source, NodeNumbers target) {
+    System.out.println("straight up");
+//    int x1 = (source.x * levelMultiplier - (source.topLeftCount > target.leftDownCount ? source.topLeftCount : target.leftDownCount )) * scale;
+    int x1 = (source.x * levelMultiplier - (source.topLeftCount > target.leftDownCount ? source.topLeftCount : target.leftDownCount )) * scale;
+
+
+    int y1 = source.y * levelMultiplier * scale;
+
+    if (source.topRightCount == 0) source.topRightCount++;
+
+    int x2 = x1;
+    int y2 = (target.y * levelMultiplier + ((target.leftDownCount > target.rightDownCount) ? target.leftDownCount : target.rightDownCount)) * scale;
+
+    source.topLeftCount++;
+    target.leftDownCount++;
+
+    drawStraightLine(x1, y1, x2, y2);
+    drawEllipse(parent.color(250, 250, 250), x1, y1);
+    drawEllipse(parent.color(250, 250, 250), x2, y2);
+  }
+
+  // draw new line on the left and above.
   private void drawUpThenLeft(int scale, NodeNumbers source, NodeNumbers target) {
     System.out.println("Going up then left ");
     float x1 = (source.x * levelMultiplier - source.topLeftCount++) * scale;
@@ -577,6 +649,7 @@ public class Graph {
     drawSubwayLine(x1, y1, x2, y2, x3, y3);
   }
 
+  // draw new line on the right
   private void drawUpThenRight(int scale, NodeNumbers source, NodeNumbers target) {
     System.out.println("Going up then right");
     float x1 = (source.x * levelMultiplier + source.topRightCount++) * scale;
@@ -641,7 +714,15 @@ public class Graph {
     drawEllipse(node.getNodeColor(),
         (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale,
         (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale);
-    if(node.getLabel() != null){
+    if (!gatesToLabel.contains(node)) {
+      gatesToLabel.add(node);
+      labelNode(node, scale);
+    }
+  }
+
+  private void labelNode(Node node, int scale) {
+    if(node.getLabel()!= null){
+      parent.stroke(node.getNodeColor());
       parent.text(node.getLabel(),
           (gateLevels.get(node.getLabel()).x * levelMultiplier) * scale + 6,
           (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale - 12);
@@ -660,6 +741,7 @@ public class Graph {
   private void drawEdge(Edge e, int scale, int c) {
     parent.fill(c);
     parent.stroke(c);
+//    setStrokeColor();
     if(e.path.isEmpty()){
       parent.line(e.source.x * scale, e.source.y * scale, e.target.x * scale, e.target.y * scale);
     } else {
@@ -680,7 +762,7 @@ public class Graph {
       for(Integer i : e.path) {
         int x = i % this.width;
         int y = i / this.width;
-        parent.ellipse(x * scale, y * scale, 0.2f, 0.2f);
+        parent.ellipse(x * scale, y * scale, 0.1f, 0.1f);
       }
     }
   }
@@ -741,63 +823,5 @@ public class Graph {
         System.out.println("Error in closing the BufferedWriter" + ex);
       }
     }
-  }
-
-  public List<Node> dfs(Node start, Node goal) {
-    if (start == null || goal == null) {
-      System.out.println("Start or goal node is null!  No path exists.");
-      return new LinkedList<Node>();
-    }
-
-    HashMap<Node, Node> parentMap = new HashMap<Node, Node>();
-    boolean found = dfsSearch(start, goal, parentMap);
-
-    if (!found) {
-      System.out.println("No path exists");
-      return new LinkedList<Node>();
-    }
-
-    // reconstruct the path
-    return constructPath(start, goal, parentMap);
-  }
-
-  private List<Node> constructPath(Node start, Node goal,
-                                   HashMap<Node, Node> parentMap) {
-    LinkedList<Node> path = new LinkedList<Node>();
-    Node curr = goal;
-    while (curr != start) {
-      path.addFirst(curr);
-      curr = parentMap.get(curr);
-    }
-    path.addFirst(start);
-    return path;
-  }
-
-  private boolean dfsSearch(Node start, Node goal,
-                            HashMap<Node, Node> parentMap)
-  {
-    HashSet<Node> visited = new HashSet<Node>();
-    Stack<Node> toExplore = new Stack<Node>();
-    toExplore.push(start);
-    boolean found = false;
-
-    // Do the search
-    while (!toExplore.empty()) {
-      Node curr = toExplore.pop();
-      if(curr.getLabel() != null ) {
-
-      }
-      List<Edge> neighbors = curr.getNeighbours();
-      ListIterator<Edge> it = neighbors.listIterator(neighbors.size());
-      while (it.hasPrevious()) {
-        Node next = getNamedNodes().get(it.previous().endPixel);
-        if (!visited.contains(next)) {
-          visited.add(next);
-          parentMap.put(next, curr);
-          toExplore.push(next);
-        }
-      }
-    }
-    return found;
   }
 }

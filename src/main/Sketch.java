@@ -60,6 +60,10 @@ public class Sketch extends PApplet {
     //sensor.writeEdgeInfoCSV("/Users/atuladhar/projects/vastChallenge/processing/sketch_graph/outputs/graphEdgeInfoRenamedCSV.csv");
   }
 
+  private void drawLegend(int count) {
+
+  }
+
   @Override
   public void draw() {
     //image(myImage, 0, 0);
@@ -75,27 +79,45 @@ public class Sketch extends PApplet {
 
     String[] lines = loadStrings("data/currentpath.json");
 
-    Integer s = Integer.parseInt("7fc97f", 16);
-
-   String[] colors = {
-       "127,201,127",
-       "190,174,212",
-       "253,192,134",
-       "152,78,163",
-       "56,108,176",
-       "240,2,127" };
+    String[] colors = {
+        "127,201,127",  // green
+        "190,174,212",  // light purple
+        "253,192,134",  // orange
+        "152,78,163",   // purple
+        "56,108,176",   // blue
+        "240,2,127"     // pink
+    };
 
     int count = 0;
     for (String l: lines){
       count++;
-//      if (count == 5) {
+//      if (count == 6) {
       JSONObject obj = parseJSONObject(l);
       JSONArray timedPath = obj.getJSONArray("timedPath");
       println("\nDrawing path: " + count + " : "+ obj.getString("path"));
+//      sensor.drawPathFromNewJson(colors[count-1], timedPath, scale);
       sensor.drawSubwayMap(colors[count-1], timedPath, scale);
+
+      String[] split = colors[count-1].split(",");
+      int r = Integer.parseInt(split[0]);
+      int g = Integer.parseInt(split[1]);
+      int b = Integer.parseInt(split[2]);
+
+      fill(r, g, b);
+      stroke(255, 255, 255);
+
+      float x = (sensor.gateLevels.get("legend").x * sensor.levelMultiplier) * scale;
+      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
+
+      rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
+      text(obj.getString("path"),
+          x + sensor.levelMultiplier + 5,
+          y);
+
 //      }
       if (count == 6) break;
     }
+//    sensor.markNodes(scale);
 
 //    sensor.drawAllSubwayNodes(scale);
 
@@ -158,7 +180,7 @@ public class Sketch extends PApplet {
   /** Use the result from createGraph (with landmarks) to create a new minimized graph
    * with only landmarks as nodes. Also calculates the pixel distances between the landmarks
    */
-  Graph createSensorGraphDFS(Graph g){
+  private Graph createSensorGraphDFS(Graph g){
     Graph sg = new Graph(this, myImage);
     Map<Integer, Integer> distMap = new HashMap<Integer, Integer>();       // to count pixel distance.
     Map<Integer, List<Integer>> pathMap = new HashMap<Integer, List<Integer>>();    // to track the path of the edge.
@@ -229,52 +251,6 @@ public class Sketch extends PApplet {
           }
           sg.addNamedNode(sgNode);
         }
-      }
-    }
-    println(sg.toString());
-    return sg;
-  }
-
-  /** NOTE: Changed to DFS for counting pixels */
-  Graph createSensorGraphBFS(Graph g) {
-    Graph sg = new Graph(this, myImage);
-
-    for (Map.Entry<String, Node> n : g.getNamedNodes().entrySet()){
-      if(n.getValue().getLabel() != null){
-        Node node = new Node(n.getValue());
-        Node sgNode = new Node(n.getValue());
-        sgNode.initNeighbours();
-
-        Map<Integer, Integer> distMap = new HashMap<Integer, Integer>();
-        distMap.put(node.getPixel(), 0);
-
-        // bfs initialisation
-        HashSet<Node> visited = new HashSet<Node>();
-        Queue<Node> toExplore = new LinkedList<Node>();
-        visited.add(node);
-        toExplore.add(node);
-
-        // Do the search
-        while (!toExplore.isEmpty()) {
-          Node curr = toExplore.remove();
-
-          List<Edge> neighbors = curr.getNeighbours();
-          ListIterator<Edge> it = neighbors.listIterator(neighbors.size());
-
-          while (it.hasPrevious()) {     //reverse. ???
-            Node next = g.getNamedNodes().get(it.previous().target.getName());
-
-            if(next.getLabel() != null && next.getPixel() != node.getPixel()) {
-              distMap.put(next.getPixel(), distMap.get(curr.getPixel()) + 1);
-              sgNode.addWeightedNeighbour(next, distMap.get(next.getPixel()));
-            } else if (!visited.contains(next)) {
-              distMap.put(next.getPixel(), distMap.get(curr.getPixel()) + 1);
-              visited.add(next);
-              toExplore.add(next);
-            }
-          }
-        }
-        sg.addNamedNode(sgNode);
       }
     }
     println(sg.toString());
