@@ -75,9 +75,10 @@ public class Sketch extends PApplet {
     //sensor.draw(scale);
 
 //    JSONObject obj = loadJSONObject("/Users/atuladhar/projects/vastChallenge/processing/sketch_graph/test.json");
-//    JSONObject obj = loadJSONObject("data/currentpath.json");
+//    JSONObject obj = loadJSONObject("data/singleDayTopPaths.json");
 
-    String[] lines = loadStrings("data/currentpath.json");
+    String[] singleDayLines = loadStrings("data/singleDayTopPaths.json");
+    String[] multipleDayLines = loadStrings("data/multipleDayTopPaths.json");
 
     String[] colors = {
         "127,201,127",  // green
@@ -88,8 +89,8 @@ public class Sketch extends PApplet {
         "240,2,127"     // pink
     };
 
-    int count = 0;
-    for (String l: lines){
+    /*int count = 0;
+    for (String l: singleDayLines){
       count++;
 //      if (count == 6) {
       JSONObject obj = parseJSONObject(l);
@@ -118,7 +119,45 @@ public class Sketch extends PApplet {
 
 //      }
       if (count == 6) break;
+    }*/
+
+    int count = 0;
+    for (String l: multipleDayLines){
+      count++;
+//      if (count == 6) {
+      JSONObject obj = parseJSONObject(l);
+
+      String multipleDayPath [] = obj.getString("path").split("\\|\\|");
+
+      println("\nDrawing path: " + count + " : "+ obj.getString("path"));
+//      sensor.drawPathFromNewJson(colors[count-1], timedPath, scale);
+      sensor.drawSubwayMap(colors[count-1], multipleDayPath, scale);
+
+      String[] split = colors[count-1].split(",");
+      int r = Integer.parseInt(split[0]);
+      int g = Integer.parseInt(split[1]);
+      int b = Integer.parseInt(split[2]);
+
+      fill(r, g, b);
+      stroke(255, 255, 255);
+
+      float x = (sensor.gateLevels.get("legend").x * sensor.levelMultiplier) * scale;
+//      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
+      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + obj.getInt("rank") * sensor.levelMultiplier;
+
+      rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
+
+      // uncomment to write the legent
+      /*fill(0, 0, 0);
+      text(obj.getString("path"),
+          x + sensor.levelMultiplier + 5,
+          y);*/
+
+//      }
+      if (count == 6) break;
     }
+
+
 //    sensor.markNodes(scale);
 
 //    sensor.drawAllSubwayNodes(scale);
@@ -140,7 +179,7 @@ public class Sketch extends PApplet {
 
     //Testing main.ES:
 //    testES(obj);
-    save("outputs/TEST");
+    save("outputs/multipleDayTopPaths");
   }
 
   private void testES(JSONObject obj) {
