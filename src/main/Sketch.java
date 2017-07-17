@@ -99,30 +99,34 @@ public class Sketch extends PApplet {
 //      sensor.drawPathFromNewJson(colors[count-1], timedPath, scale);
       sensor.drawSubwayMap(colors[count-1], timedPath, scale);
 
-      String[] split = colors[count-1].split(",");
-      int r = Integer.parseInt(split[0]);
-      int g = Integer.parseInt(split[1]);
-      int b = Integer.parseInt(split[2]);
-
-      fill(r, g, b);
-      stroke(255, 255, 255);
-
-      float x = (sensor.gateLevels.get("legend").x * sensor.levelMultiplier) * scale;
-      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
-
-      rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
-
-      fill(0, 0, 0);
-      text(obj.getString("path"),
-          x + sensor.levelMultiplier + 5,
-          y);
-
+      createLegend(colors[count - 1], obj);
 //      }
       if (count == 6) break;
     }*/
 
-    int count = 0;
-    for (String l: multipleDayLines){
+    /*int count = 0;
+    for (String l: singleDayLines){
+//    for (String l: multipleDayLines){
+      count++;
+      if (count == 6) {
+      JSONObject obj = parseJSONObject(l);
+
+      String multipleDayPath [] = obj.getString("path").split("\\|\\|");
+
+      println("\nDrawing path: " + count + " : "+ obj.getString("path"));
+//      sensor.drawPathFromNewJson(colors[count-1], timedPath, scale);
+//      sensor.drawSubwayMap(colors[count-1], multipleDayPath, scale);
+      sensor.drawActualPath(colors, multipleDayPath, scale);
+//      createLegend(colors[count - 1], obj);
+
+      }
+      if (count == 6) break;
+    }*/
+
+    /*sensor.flag = true;
+
+    for (String l: singleDayLines){
+//    for (String l: multipleDayLines){
       count++;
 //      if (count == 6) {
       JSONObject obj = parseJSONObject(l);
@@ -131,32 +135,24 @@ public class Sketch extends PApplet {
 
       println("\nDrawing path: " + count + " : "+ obj.getString("path"));
 //      sensor.drawPathFromNewJson(colors[count-1], timedPath, scale);
-      sensor.drawSubwayMap(colors[count-1], multipleDayPath, scale);
-
-      String[] split = colors[count-1].split(",");
-      int r = Integer.parseInt(split[0]);
-      int g = Integer.parseInt(split[1]);
-      int b = Integer.parseInt(split[2]);
-
-      fill(r, g, b);
-      stroke(255, 255, 255);
-
-      float x = (sensor.gateLevels.get("legend").x * sensor.levelMultiplier) * scale;
-//      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
-      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + obj.getInt("rank") * sensor.levelMultiplier;
-
-      rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
-
-      // uncomment to write the legent
-      /*fill(0, 0, 0);
-      text(obj.getString("path"),
-          x + sensor.levelMultiplier + 5,
-          y);*/
+//      sensor.drawSubwayMap(colors[count-1], multipleDayPath, scale);
+      sensor.drawActualPath(colors, multipleDayPath, scale);
+//      createLegend(colors[count - 1], obj);
 
 //      }
       if (count == 6) break;
-    }
+    }*/
 
+//    String illegalCar1Path = "entrance1:gate2:ranger-stop1:ranger-stop1:gate2:entrance1";
+    String illegalCar4Path = "entrance3:gate6:ranger-stop6:gate5:general-gate5:gate3:ranger-stop3:ranger-stop3:gate3:general-gate5:gate5:ranger-stop6:gate6:entrance3";
+//    String multipleDayPath5 = "entrance1:general-gate7:camping5||camping5:general-gate7:entrance3";
+//    String weirdGuyPath = "entrance0:general-gate1:ranger-stop2:ranger-stop0:general-gate2:general-gate5:camping6||camping6:general-gate5:general-gate2:ranger-stop0:ranger-stop2:general-gate1:general-gate4:general-gate7:camping2||camping2:camping3||camping3:general-gate7:camping5||camping5:general-gate7:general-gate4:general-gate1:ranger-stop2:ranger-stop0:general-gate2:general-gate0:camping1:camping1:general-gate0:general-gate2:ranger-stop0:ranger-stop2:general-gate1:general-gate4:general-gate7:camping0||camping0:camping2||camping2:general-gate7:general-gate4:general-gate1:ranger-stop2:ranger-stop0:general-gate2:general-gate5:camping6||camping6:general-gate5:general-gate2:ranger-stop0:ranger-stop2:general-gate1:general-gate4:general-gate7:camping3||camping3:camping4||camping4:camping0||camping0:camping4||camping4:camping2||camping2:general-gate7:camping5";
+//    String singleDayPathChange = "entrance4:general-gate5:general-gate2:ranger-stop0:ranger-stop2:general-gate1:general-gate4:general-gate7:entrance1";
+
+    sensor.drawSubwayMap(colors[4], illegalCar4Path.split("\\|\\|"), scale);
+//    sensor.drawActualPath(colors, illegalCar4Path.split("\\|\\|"), scale);
+
+//    drawLegend(colors[4]);
 
 //    sensor.markNodes(scale);
 
@@ -179,7 +175,45 @@ public class Sketch extends PApplet {
 
     //Testing main.ES:
 //    testES(obj);
-    save("outputs/multipleDayTopPaths");
+    save("outputsMap/illegalCar4SubwayMap");
+  }
+
+  private void drawLegend(String color) {
+    String[] split = color.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    fill(r, g, b);
+    stroke(255, 255, 255);
+
+    float x = (1 * sensor.levelMultiplier) * scale;
+//      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
+    float y = (12 * sensor.levelMultiplier) * scale;
+
+    rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
+  }
+
+  private void createLegend(String color, JSONObject obj) {
+    String[] split = color.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    fill(r, g, b);
+    stroke(255, 255, 255);
+
+    float x = (sensor.gateLevels.get("legend").x * sensor.levelMultiplier) * scale;
+//      float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + count * sensor.levelMultiplier;
+    float y = (sensor.gateLevels.get("legend").y * sensor.levelMultiplier) * scale + obj.getInt("rank") * sensor.levelMultiplier;
+
+    rect(x - sensor.levelMultiplier , y - sensor.levelMultiplier + 6, sensor.levelMultiplier - 2, sensor.levelMultiplier - 2);
+
+    // uncomment to write the legent
+      fill(0, 0, 0);
+      text(obj.getString("path"),
+          x + sensor.levelMultiplier + 5,
+          y);
   }
 
   private void testES(JSONObject obj) {

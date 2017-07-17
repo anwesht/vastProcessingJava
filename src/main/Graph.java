@@ -226,7 +226,7 @@ public class Graph {
     }
   }*/
 
-  void drawPathFromNewJson(String c, JSONArray pathNodes, int scale) {
+  /*void drawPathFromNewJson(String c, JSONArray pathNodes, int scale) {
     SUBWAY_COLOR = c;
     int multipleEntryCount = 1;
 
@@ -244,7 +244,7 @@ public class Graph {
         if (this.getNamedNodes().containsKey(nextNodeName)) {
           List<Edge> edgeList = currentNode.getAllEdges(nextNodeName);
           int edgeCount = 0;
-          /*for (Edge e : edgeList) {
+          *//*for (Edge e : edgeList) {
             edgeCount++;
             if (e != null){
               multipleEntryCount = 1;
@@ -256,7 +256,7 @@ public class Graph {
               parent.text("Speed: " + speed + " mph", x, y);
             }
             drawNode(this.getNamedNodes().get(nextNodeName), scale);
-          }*/
+          }*//*
 
           for (Edge e : edgeList) {
             edgeCount++;
@@ -290,6 +290,87 @@ public class Graph {
         System.out.println("Did not find main.Node: " + currentNodeName);
       }
       currentNodeObj = nextNodeObj;
+    }
+  }*/
+
+  private void setColors(String c) {
+    String[] split = c.split(",");
+    int r = Integer.parseInt(split[0]);
+    int g = Integer.parseInt(split[1]);
+    int b = Integer.parseInt(split[2]);
+
+    parent.stroke(r, g, b);
+    parent.fill(r, g, b);
+  }
+
+  boolean flag = false;
+  void drawActualPath(String[] c, String [] multipleDayPath, int scale) {
+
+    String mainColor;
+    if (flag ) {
+      mainColor = c[2];
+    } else {
+      mainColor = c[3];
+    }
+
+    int multipleEntryCount = 1;
+
+    for (String singleDayPathString : multipleDayPath) {
+
+      String[] singleDayPath = singleDayPathString.split(":");
+
+      String currentNodeName = singleDayPath[0];
+
+      for (int i = 1; i < singleDayPath.length; i++) {
+        String nextNodeName = singleDayPath[i];
+
+        if (this.getNamedNodes().containsKey(currentNodeName)) {
+          Node currentNode = this.getNamedNodes().get(currentNodeName);
+          drawNode(currentNode, scale);
+          if (this.getNamedNodes().containsKey(nextNodeName)) {
+            List<Edge> edgeList = currentNode.getAllEdges(nextNodeName);
+            Collections.sort(edgeList);
+
+            int edgeCount = 0;
+
+            setColors(mainColor);
+
+            for (Edge e : edgeList) {
+              edgeCount++;
+              if (e != null) {
+                multipleEntryCount = 1;
+                if (edgeCount == 1) drawEdge(e, scale);
+                else {
+                  drawEdgeDup(e, scale);
+                }
+              }
+              drawNode(this.getNamedNodes().get(nextNodeName), scale);
+            }
+            if (currentNodeName.equals(nextNodeName)) {
+              multipleEntryCount++;
+
+              int x = (currentNode.x + 2) * scale;
+              int y = (currentNode.y - 2) * scale;
+
+              parent.text("X" + multipleEntryCount, x, y);
+            }
+          } else {
+            parent.fill(parent.color(255, 0, 0));
+
+            int x = (currentNode.x + 12) * scale;
+            int y = (currentNode.y - 2) * scale;
+            parent.line(x, y, (x + 4), (y + 4));
+            parent.line(x, (y + 4), (x + 4), y);
+            parent.text(nextNodeName, x + 12, y + 12);
+            if (i < singleDayPath.length - 1) currentNodeName = singleDayPath[i + 1];
+            i++;
+            continue;
+          }
+        } else {
+          System.out.println("Did not find main.Node: " + currentNodeName);
+        }
+        currentNodeName = nextNodeName;
+      }
     }
   }
 
@@ -349,7 +430,7 @@ public class Graph {
     {
 //      put("entrance1", new NodeNumbers(1, 5));
       put("entrance1", new NodeNumbers(2, 4));
-      put("gate2", new NodeNumbers(1, 1));
+      put("gate2", new NodeNumbers(2, 3));
       put("ranger-stop4", new NodeNumbers(1, 1));
       put("camping5", new NodeNumbers(1, 7));
       put("ranger-stop1", new NodeNumbers(1, 1));
@@ -382,17 +463,17 @@ public class Graph {
 //      put("general-gate4", new NodeNumbers(4, 6));
       put("general-gate4", new NodeNumbers(5, 6));
 
-      put("gate6", new NodeNumbers(5, 5));
+      put("gate6", new NodeNumbers(6, 9));
 //      put("entrance3", new NodeNumbers(5, 11));
 //      put("entrance3", new NodeNumbers(5, 10));
       put("entrance3", new NodeNumbers(6, 10));
 
-      put("ranger-stop6", new NodeNumbers(6, 6));
+      put("ranger-stop6", new NodeNumbers(7, 9));
 //      put("ranger-stop0", new NodeNumbers(6, 2));
 //      put("ranger-stop0", new NodeNumbers(7, 2));
       put("ranger-stop0", new NodeNumbers(8, 2));
 
-      put("gate5", new NodeNumbers(7, 7));
+      put("gate5", new NodeNumbers(8, 9));
       put("ranger-base", new NodeNumbers(7, 7));
 //      put("general-gate2", new NodeNumbers(7, 2));
 //      put("general-gate2", new NodeNumbers(8, 2));
@@ -411,8 +492,8 @@ public class Graph {
 
       put("camping6", new NodeNumbers(9, 9));
 
-      put("gate3", new NodeNumbers(10, 10));
-      put("ranger-stop3", new NodeNumbers(10, 10));
+      put("gate3", new NodeNumbers(9, 4));
+      put("ranger-stop3", new NodeNumbers(9, 3));
       put("ranger-stop5", new NodeNumbers(10, 10));
 
       put("gate4", new NodeNumbers(11, 11));
@@ -522,17 +603,28 @@ public class Graph {
   void drawSubwayMap(String color, String[] multipleDayPath, int scale) {
 //    drawLevelsGrid(scale);
     SUBWAY_COLOR = color;
+    String currentNodeName = "";
 
     for (String singleDayPathString : multipleDayPath) {
       parent.println("SingleDay path string : " + singleDayPathString);
 
       String[] singleDayPath = singleDayPathString.split(":");
 
-      String currentNodeName = singleDayPath[0];
+//      String currentNodeName = singleDayPath[0];
+      System.out.println(currentNodeName);
+      System.out.println(singleDayPath[0]);
+
+      if (currentNodeName.equals(singleDayPath[0])) {
+        currentNodeName = singleDayPath[1];
+      } else {
+        currentNodeName = singleDayPath[0];
+      }
 //    parent.stroke(parent.random(255), parent.random(255), parent.random(255));
 
       for(int i = 1; i < singleDayPath.length; i++) {
         String nextNodeName = singleDayPath[i];
+
+        if (currentNodeName.equals(nextNodeName)) continue;
 
         if (this.getNamedNodes().containsKey(currentNodeName) && this.getNamedNodes().containsKey(nextNodeName)) {
           Node currentNode = this.getNamedNodes().get(currentNodeName);
@@ -555,12 +647,12 @@ public class Graph {
             int x1, y1, x2, y2;
 
             if (source.y < target.y) {
-              x1 = (source.x * levelMultiplier + source.rightDownCount++ ) * scale;
+              x1 = (source.x * levelMultiplier - source.rightDownCount++ ) * scale;
               y1 = (source.y * levelMultiplier + source.leftDownCount)* scale;
 
 //              x2 = (target.x * levelMultiplier - target.topLeftCount ) * scale;
 //              x2 = (target.x * levelMultiplier) * scale;
-              x2 = (target.x * levelMultiplier - target.topLeftCount ) * scale;
+              x2 = (target.x * levelMultiplier - target.topLeftCount++ ) * scale;
               y2 = (target.y * levelMultiplier - target.leftUpCount++) * scale;
 
               drawStraightLine(x1, y1, x2, y2);
@@ -836,10 +928,10 @@ public class Graph {
   private void drawNode(Node node, int scale) {
     parent.println("drawing main.Node: " + node.getLabel());
     parent.fill(node.getNodeColor());
-    parent.ellipse(node.x * scale, node.y * scale, 5, 5);
-    if(node.getLabel() != null){
+    parent.ellipse(node.x * scale, node.y * scale, 8, 8);
+    /*if(node.getLabel() != null){
       parent.text(node.getLabel(), node.x * scale + 6, node.y * scale + 6);
-    }
+    }*/
   }
 
   private void drawSubwayNode(Node node, int scale) {
@@ -849,7 +941,7 @@ public class Graph {
         (gateLevels.get(node.getLabel()).y * levelMultiplier) * scale);
     if (!gatesToLabel.contains(node)) {
       gatesToLabel.add(node);
-      labelNode(node, scale);
+//      labelNode(node, scale);
     }
   }
 
@@ -868,13 +960,6 @@ public class Graph {
   }
 
   private void drawEdge(Edge e, int scale) {
-    drawEdge(e, scale, parent.color(0,0,0));
-  }
-
-  private void drawEdge(Edge e, int scale, int c) {
-    parent.fill(c);
-    parent.stroke(c);
-//    setStrokeColor();
     if(e.path.isEmpty()){
       parent.line(e.source.x * scale, e.source.y * scale, e.target.x * scale, e.target.y * scale);
     } else {
@@ -886,9 +971,14 @@ public class Graph {
     }
   }
 
-  private void drawEdgeDup(Edge e, int scale, int c) {
+  private void drawEdge(Edge e, int scale, int c) {
     parent.fill(c);
     parent.stroke(c);
+//    setStrokeColor();
+    drawEdge(e, scale);
+  }
+
+  private void drawEdgeDup(Edge e, int scale) {
     if(e.path.isEmpty()){
       parent.line(e.source.x * scale, e.source.y * scale, e.target.x * scale, e.target.y * scale);
     } else {
@@ -898,6 +988,12 @@ public class Graph {
         parent.ellipse(x * scale, y * scale, 0.1f, 0.1f);
       }
     }
+  }
+
+  private void drawEdgeDup(Edge e, int scale, int c) {
+    parent.fill(c);
+    parent.stroke(c);
+    drawEdgeDup(e, scale);
   }
 
   /** Returns adjacency-list representation of graph */

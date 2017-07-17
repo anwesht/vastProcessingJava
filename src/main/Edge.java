@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Edge {
+public class Edge implements Comparable<Edge> {
   PApplet parent;
   String start, end;
   int startPixel, endPixel;
@@ -84,5 +84,16 @@ public class Edge {
     hash = hash * 31 + direction.hashCode();
     hash = hash * 31 + target.hashCode();
     return hash;
+  }
+
+  public int compareTo(Edge compareEdge) {
+
+      int compareQuantity = compareEdge.pixelDistance;
+
+      //ascending order
+      return this.pixelDistance - compareQuantity;
+
+      //descending order
+      //return compareQuantity - this.pixelDistance;
   }
 }
